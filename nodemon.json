@@ -1,0 +1,13 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    ".idea",
+    "src",
+    "node_modules/"
+  ],
+  "verbose": true,
+  "execMap": {
+    "js": "node"
+  }
+}

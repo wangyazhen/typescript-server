@@ -15,6 +15,9 @@ export class Article {
   title: string
 
   @Column()
+  brief: string
+
+  @Column()
   description: string
 
   @Column()

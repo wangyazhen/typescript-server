@@ -17,6 +17,9 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 
+# 都用最新的
+package-lock.json
+
 # Runtime data
 pids
 *.pid

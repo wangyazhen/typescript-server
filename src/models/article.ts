@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm'
 import { Contains, Max, Min, IsInt, Length, IsDate } from 'class-validator'
 
-import { Tag } from '../models/tag'
+// import { Tag } from './tag'
 
 
 @Entity('article')
@@ -28,9 +28,13 @@ export class Article {
   @Column("simple-array")
   tagIds?: number[]
 
-  @ManyToMany(type => Tag, tag => tag.articles)
-  @JoinTable()
-  tags: Tag[]
+  // 先不把tag 独立出来
+  // @ManyToMany(type => Tag, tag => tag.articles)
+  // @JoinTable()
+  // tags: Tag[]
+  // 直接读字段0
+  @Column()
+  tags: string
 
   @Column({ nullable: true })
   // @IsDate()
@@ -42,7 +46,7 @@ export class Article {
   @Column({ nullable: true })
   authorName?: string
 
-  @Column({ type: 'mediumtext' })
+  @Column({ type: 'mediumtext', select: false })
   content: string
 
   @Column({ default: 1 })

@@ -1,10 +1,14 @@
-import { JsonController, Get, Post, Put, Delete, Body, Param } from 'routing-controllers'
+import { JsonController, Get, Post, Put, Delete, Body, Param, QueryParam, QueryParams } from 'routing-controllers'
 import { getRepository, Repository } from 'typeorm'
 import { validate } from 'class-validator'
 
 import { Article } from '../models/article'
 import { Tag } from '../models/tag'
 
+class ArticleQuery {
+    start: number
+    limit: number
+}
 
 @JsonController('/articles')
 export class ArticleController {
@@ -15,8 +19,17 @@ export class ArticleController {
     }
 
     @Get('/')
-    async queryArticle() {
-        return this.articleRepository.find({ relations: ["tags"] })
+    async queryArticle(@QueryParams() query: ArticleQuery) {
+        const [data, count] = await this.articleRepository.findAndCount({
+            skip: query.start || 0,
+            take: query.limit || 10,
+            // relations: ["tags"]
+        })
+        return {
+            data,
+            size: query.limit,
+            total: count,
+        }
     }
 
     @Post('/')
@@ -30,7 +43,7 @@ export class ArticleController {
         } else {
             // article.tagIds
             // const tags =
-            article.tags = await getRepository(Tag).findByIds(article.tagIds)
+            // article.tags = await getRepository(Tag).findByIds(article.tagIds)
             await this.articleRepository.save(article)
             return article
         }
@@ -38,6 +51,10 @@ export class ArticleController {
 
     @Get('/:id')
     async getOne(@Param('id') id: number) {
-        return this.articleRepository.findOne(id)
+        // return this.articleRepository.findOne(id)
+        return this.articleRepository.createQueryBuilder()
+            .whereInIds([id])
+            .addSelect("Article.content")
+            .getOne()
     }
 }

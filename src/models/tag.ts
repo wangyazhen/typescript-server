@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm'
 
-import { Article } from '../models/article'
+// import { Article } from './article'
 
 
 @Entity('tag')
@@ -11,8 +11,8 @@ export class Tag {
   @Column()
   name: string
 
-  @ManyToMany(type => Article, article => article.tags)
-  @JoinTable()
-  articles: Article[]
+  // @ManyToMany(type => Article, article => article.tags)
+  // @JoinTable()
+  // articles: Article[]
 
 }

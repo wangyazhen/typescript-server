@@ -25,10 +25,10 @@ export class Article {
   createTime: Date
 
   // @Column({ nullable: true, type: "numeric", array: true })
-  @Column("simple-array")
-  tagIds?: number[]
 
   // 先不把tag 独立出来
+  // @Column("simple-array")
+  // tagIds?: number[]
   // @ManyToMany(type => Tag, tag => tag.articles)
   // @JoinTable()
   // tags: Tag[]
@@ -64,6 +64,10 @@ export class Article {
   @Min(0)
   commentLikeCount: number
 
+  // 文章状态 0 是正常 1 是已删除 2 是草稿箱
+  @Column({ default: 0 })
+  @IsInt()
+  status: number
 
 }
 

@@ -54,6 +54,12 @@ export class ArticleController {
         }
     }
 
+    @Put('/:id')
+    async updateOne(@Param('id') id: number, @Body() articleDto: Article) {
+        const article = await this.articleRepository.findOne(id)
+        return await this.articleRepository.save({...article, ...articleDto})
+    }
+
     @Delete('/:id')
     async deleteOne(@Param('id') id: number) {
         // 状态改为 1

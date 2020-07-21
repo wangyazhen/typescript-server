@@ -1,15 +1,19 @@
-import { JsonController, Get, Post, Put, Delete, Body, Param, QueryParam, QueryParams } from 'routing-controllers'
-import { getRepository, Repository, Not, MoreThan } from 'typeorm'
+import {JsonController, Get, Post, Put, Delete, Body, Param, QueryParams, Authorized} from 'routing-controllers'
+import { getRepository, Repository, Equal, Not, MoreThan, Like } from 'typeorm'
 import { validate } from 'class-validator'
-
+import showdown from 'showdown'
+const showdown = require('showdown')
 import { Article } from '../models/article'
-import { Tag } from '../models/tag'
+const converter = new showdown.Converter()
 
 class ArticleQuery {
     start: number
     limit: number
+    title?: string
+    status?: number
 }
 
+@Authorized()
 @JsonController('/articles')
 export class ArticleController {
     private articleRepository: Repository<Article>
@@ -20,10 +24,13 @@ export class ArticleController {
 
     @Get('/')
     async queryArticle(@QueryParams() query: ArticleQuery) {
+        console.log('参数：', query)
         const [data, count] = await this.articleRepository.findAndCount({
-            // 大于 0 的过滤
-            where: {
-                status: Not(MoreThan(0)),
+            where: query.title ? {
+                status: Equal(query.status),
+                title: Like(query.title)
+            } : {
+                status: Equal(query.status),
             },
             skip: query.start || 0,
             take: query.limit || 10,
@@ -39,16 +46,14 @@ export class ArticleController {
         }
     }
 
+
     @Post('/')
     async createArticle(@Body() article: Article) {
-        article.createTime = new Date()
-        article.updateTime = new Date()
         const errors = await validate(article)
         if (errors.length > 0) {
             console.log('验证错误信息:', errors)
             return "验证失败"
         } else {
-            // article.tags = await getRepository(Tag).findByIds(article.tagIds)
             await this.articleRepository.save(article)
             return article
         }
@@ -78,5 +83,18 @@ export class ArticleController {
             .whereInIds([id])
             .addSelect("Article.content")
             .getOne()
+    }
+
+    @Get('/:id/html')
+    async getOneHtml(@Param('id') id: number) {
+        const article = await this.articleRepository.createQueryBuilder()
+            .whereInIds([id])
+            .addSelect("Article.content")
+            .getOne()
+        const html = converter.makeHtml(article.content)
+        return {
+            ...article,
+            html
+        }
     }
 }

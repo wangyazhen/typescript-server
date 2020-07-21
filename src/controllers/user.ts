@@ -1,9 +1,8 @@
 import { JsonController, Param, Body, Get, Post, Put, Delete, Authorized, CurrentUser, HeaderParam } from "routing-controllers"
 import * as jwt from 'jsonwebtoken'
 import { secretKey } from '../config'
-import { getManager, getConnection, getRepository } from 'typeorm'
+import { getRepository } from 'typeorm'
 import {User} from '../models/user'
-import { Role } from '../models/role'
 import { Token } from '../models/token'
 
 @JsonController('/users')
@@ -17,20 +16,18 @@ export class UserController {
   @Authorized()
   @Get('/')
   getAll() {
-    // return getConnection().manager.find(User)
-    // return getManager().find(User)
-    return this.userRepository.find({ relations: ["roles"] })
+    return this.userRepository.find()
   }
 
   @Authorized()
   @Get('/:id')
   getOne(@Param('id') id: number) {    
-    return this.userRepository.findOne(id, { relations: ['roles'] })
+    return this.userRepository.findOne(id)
   }
 
   @Authorized()
   @Get('/profile')
-  userProfile(@CurrentUser() user: any) {
+  userProfile(@CurrentUser() user: User) {
     return user
   }
 
@@ -56,7 +53,7 @@ export class UserController {
     }
 
     const token = jwt.sign(tokenObj, secretKey, {
-      expiresIn: 60 // 授权时效24小时
+      expiresIn: 60 * 60 * 24 // 授权时效24小时
     })
     const tokenModel = new Token()
     tokenModel.userId = userObj.id
@@ -67,7 +64,10 @@ export class UserController {
       code: 0,
       message: '登录成功',
       data: {
+        id: userObj.id,
         username: tokenObj.username,
+        nickname: userObj.nickname,
+        userType: userObj.userType,
         token,
       }
     }
@@ -75,18 +75,22 @@ export class UserController {
 
   @Post('/logout')
   async logout(@HeaderParam('token') token: string) {
-    const dbToken = getRepository(Token).find({token})
+    const dbToken = await getRepository(Token).find({token})
     console.log('退出：', token)
-    return dbToken
+    await getRepository(Token).remove(dbToken)
+    // dbToken
+    return {
+      code: 0,
+      message: '退出成功'
+    }
   }
 
   @Post('/')
   async create(@Body() user: User) {
-    const roleRepository = getRepository(Role)
-    const roleObj = await roleRepository.findOne(user.roleId)
-    user.roles = [roleObj]
-    user.userType = roleObj.property
-    user.createTime = new Date()
+    const time = Math.floor(Date.now() / 1000)
+    user.createTime = time
+    user.lastLoginTime = time
+    user.password = '123456'
     await this.userRepository.save(user)
     return {
       message: '创建成功'
@@ -94,18 +98,21 @@ export class UserController {
   }
 
   @Put('/:id')
-  async update(@Param('id') id:number, @Body() user: any) {
+  async update(@Param('id') id:number, @Body() user: User) {
     const userObj = await this.userRepository.findOne(id)
-    userObj.name = user.name
+    userObj.nickname = user.nickname
+    userObj.userType = user.userType
 
-    await this.userRepository.save(userObj)
-    return await this.userRepository.findOne(id)
+    return this.userRepository.save(userObj)
   }
 
   @Delete('/:id')
   async delete(@Param('id') id: number ) {
     const userObj = await this.userRepository.findOne(id)
     await this.userRepository.remove(userObj)
-    return "删除成功"
+    return {
+      code: 0,
+      message: "删除成功",
+    }
   }
 }

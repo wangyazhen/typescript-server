@@ -1,12 +1,18 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm'
 
-import { Role } from './role'
+// 管理员admin 和 操作员operator 和普通用户user
+enum UserType {
+  admin = "admin",
+  operator = "operator",
+  user = "user"
+}
 
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn()
   id: number
 
+  // 登录名
   @Column()
   username: string
 
@@ -17,14 +23,13 @@ export class User {
   password: string
 
   @Column()
-  roleId: string
-
-  @Column()
   userType: string
 
   @Column()
-  createTime: Date
+  createTime: number
 
-  @OneToMany(type => Role, role => role.user)
-  roles: Role[]
+  // 最新登录时间
+  @Column()
+  lastLoginTime: number
+
 }

@@ -8,7 +8,7 @@ import { User } from './models/user'
 
 (async () => {
   const connection: Connection = await createConnection()
-  // console.log('连接成功')
+  console.log('database 连接成功')
 })()
 
 
@@ -26,12 +26,10 @@ const app = createExpressServer({
     }
   },
   currentUserChecker: async (action: Action) => {
-    // const token = action.request.headers['token']
-    // const dbToken = await getRepository(Token).findOne({ token })
-    // console.log('current user:', token)
-    // return await getRepository(User).findOne(2)
-    // return  dbToken
-    return { id: 5, username: 'www' }
+    const token = action.request.headers['token']
+    const dbToken = await getRepository(Token).findOne({ token })
+    console.log('current user:', token)
+    return await getRepository(User).findOne(dbToken.userId)
   }
 })
 

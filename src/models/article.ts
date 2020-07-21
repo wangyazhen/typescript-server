@@ -1,9 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm'
 import { Contains, Max, Min, IsInt, Length, IsDate } from 'class-validator'
 
-// import { Tag } from './tag'
-
-
 @Entity('article')
 export class Article {
   @Column()
@@ -11,40 +8,27 @@ export class Article {
   id: number
 
   @Column()
-  @Length(3, 50)
+  @Length(3, 80)
   title: string
-
-  @Column()
-  brief: string
 
   @Column()
   description: string
 
-  @Column()
-  // @IsDate()
-  createTime: Date
+  // 文章状态 0 是正常 1 是已删除 2 是草稿箱
+  @Column({ default: 0 })
+  @IsInt()
+  status: number
 
-  // @Column({ nullable: true, type: "numeric", array: true })
-
-  // 先不把tag 独立出来
-  // @Column("simple-array")
-  // tagIds?: number[]
-  // @ManyToMany(type => Tag, tag => tag.articles)
-  // @JoinTable()
-  // tags: Tag[]
-  // 直接读字段0
   @Column()
   tags: string
 
-  @Column({ nullable: true })
-  // @IsDate()
-  updateTime?: Date
+  @Column()
+  @IsInt()
+  createTime: number
 
   @Column({ nullable: true })
-  authorId?: number
-
-  @Column({ nullable: true })
-  authorName?: string
+  @IsInt()
+  updateTime?: number
 
   @Column({ type: 'mediumtext', select: false })
   content: string
@@ -59,15 +43,11 @@ export class Article {
   @Min(0)
   commentCount: number
 
+  // 点赞次数
   @Column({ default: 1 })
   @IsInt()
   @Min(0)
-  commentLikeCount: number
-
-  // 文章状态 0 是正常 1 是已删除 2 是草稿箱
-  @Column({ default: 0 })
-  @IsInt()
-  status: number
+  likeCount: number
 
 }
 
